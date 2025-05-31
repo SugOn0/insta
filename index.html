@@ -99,6 +99,10 @@
             box-shadow: inset 0 0 0 2px #666666;
         }
 
+        .form {
+            display: none;
+        }
+
         /* 여기에 추가 CSS 작성 */
     </style>
 </head>
@@ -106,62 +110,120 @@
     <main>
         <video id="camera" autoplay playsinline></video>
         <article class="article">
-            <input class="hb" placeholder="학번을 입력해주세요" maxlength="5">
-            <input class="hb" placeholder="이름을 입력해주세요">
-            <input class="hb" placeholder="인스타 아이디를 입력해주세요" oninput="this.value = this.value.toLowerCase()">
+            <input id="studentId" class="hb" placeholder="학번을 입력해주세요" maxlength="5" />
+            <input id="name" class="hb" placeholder="이름을 입력해주세요" />
+            <input id="instaId" class="hb" placeholder="인스타 아이디를 입력해주세요" oninput="this.value=this.value.toLowerCase()" />
             <p class="hb-text">특수문자까지 완벽하게 작성해주세요</p>
-            <button class="bu">이벤트 응모하기</button>
+            <button class="bu" id="submitBtn">이벤트 응모하기</button>
         </article>
-        <img id="preview" style="width:100%; border-radius: 1vh; display: none; margin-top: 2vh;" />
     </main>
+    <form id="googleForm"
+        action="https://docs.google.com/forms/d/e/1FAIpQLSfWlTbPM22v84_-QOCROt6McyBB_8B8R1BKeMQgWjKw5UfBug/formResponse"
+        method="POST" target="hidden_iframe" class="form">
+        
+        <input name="entry.1140067123" id="entryGrade" type="text" />    <!-- 학년 -->
+        <input name="entry.533202996" id="entryClass" type="text" />    <!-- 반 -->
+        <input name="entry.710919260" id="entryNumber" type="text" />   <!-- 번호 -->
+        <input name="entry.970657707" id="entryStudentId" type="text" /> <!-- 전체 학번 -->
+        <input name="entry.427554800" id="entryName" type="text" />     <!-- 이름 -->
+        <input name="entry.1528347839" id="entryInstaId" type="text" />  <!-- 인스타 아이디 -->
+        <input name="entry.1237537427" id="entryImage" type="text" />    <!-- 이미지 Base64 (참고용) -->
+    </form>
+    <iframe name="hidden_iframe" style="display:none;"></iframe>
 
   <!-- JavaScript 작성 공간 -->
     <script>
         const video = document.getElementById('camera');
-        const button = document.querySelector('.bu');
-        const inputs = document.querySelectorAll('.hb');
-        const preview = document.getElementById('preview');
+        const submitBtn = document.getElementById('submitBtn');
 
-
+        // 카메라 활성화
         navigator.mediaDevices.getUserMedia({ video: true, audio: false })
-            .then(stream => {
-                video.srcObject = stream;
-            })
-            .catch(err => {
-            console.error("카메라 접근 오류:", err);
-            alert("카메라에 접근할 수 없습니다.");
+        .then(stream => {
+            video.srcObject = stream;
+        })
+        .catch(err => {
+            console.error('카메라 접근 오류:', err);
+            alert('카메라에 접근할 수 없습니다.');
         });
-        
-        // 버튼 클릭 시
-        button.addEventListener('click', () => {
-            const [studentId, name, instaId] = Array.from(inputs).map(input => input.value.trim());
 
-            if (!studentId || !name || !instaId) {
-                alert("모든 입력란을 채워주세요.");
-                return;
-            }
+        // 학번 분리 함수 (예: 20123 → 2학년 0반 123번호)
+        function parseStudentId(id) {
+            if(id.length !== 5) return null;
+                const grade = id.charAt(0);
+                const classNum = id.slice(1, 3);  // 2자리 반
+                const number = id.slice(3, 5);    // 2자리 번호
+                return { grade, classNum, number };
+        }
 
-            // canvas로 카메라 이미지 캡처
-            const canvas = document.createElement('canvas');
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            const ctx = canvas.getContext('2d');
-            ctx.translate(canvas.width, 0); // 좌우 반전
-            ctx.scale(-1, 1);
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        submitBtn.addEventListener('click', () => {
+        const studentId = document.getElementById('studentId').value.trim();
+        const name = document.getElementById('name').value.trim();
+        const instaId = document.getElementById('instaId').value.trim();
 
-            const imageData = canvas.toDataURL('image/png');
+        if(!studentId || !name || !instaId){
+            alert('모든 입력란을 채워주세요.');
+            return;
+        }
 
-            // 미리보기 이미지 표시
-            preview.src = imageData;
-            preview.style.display = 'block';
+        const parsed = parseStudentId(studentId);
+        if(!parsed){
+            alert('학번은 5자리 숫자로 입력해주세요.');
+            return;
+        }
 
-            // 정보 확인 alert
-            const confirmText = `다음 정보로 응모하시겠습니까?\n\n학번: ${studentId}\n이름: ${name}\n인스타 ID: ${instaId}`;
-            if (confirm(confirmText)) {
-                alert("응모가 완료되었습니다!");
-                // 서버 전송 코드 추가 가능
-            }
+        // 캔버스에 카메라 이미지 캡처 (좌우 반전)
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.translate(canvas.width, 0);
+        ctx.scale(-1, 1);
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        // 이미지 크기 줄이기 (예: 너비 320px 기준 비율 유지)
+        const maxWidth = 320;
+        let newWidth = canvas.width;
+        let newHeight = canvas.height;
+        if(canvas.width > maxWidth){
+            newWidth = maxWidth;
+            newHeight = canvas.height * (maxWidth / canvas.width);
+        }
+        const resizedCanvas = document.createElement('canvas');
+        resizedCanvas.width = newWidth;
+        resizedCanvas.height = newHeight;
+        const rCtx = resizedCanvas.getContext('2d');
+        rCtx.drawImage(canvas, 0, 0, newWidth, newHeight);
+
+        // 이미지 압축 (quality 0.7)
+        const imageData = resizedCanvas.toDataURL('image/jpeg', 0.7);
+
+        // 최종 확인 메시지
+        const confirmText = `다음 정보로 응모하시겠습니까?\n\n` +
+                            `학년: ${parsed.grade}학년\n` +
+                            `반: ${parsed.classNum}반\n` +
+                            `번호: ${parsed.number}\n` +
+                            `학번: ${studentId}\n` +
+                            `이름: ${name}\n` +
+                            `인스타 ID: ${instaId}\n\n` +
+                            `(사진은 캡처되어 전송됩니다)`;
+
+        if(!confirm(confirmText)){
+            return;
+        }
+
+        // 구글 폼 숨긴 input 채우기
+        document.getElementById('entryGrade').value = parsed.grade;
+        document.getElementById('entryClass').value = parsed.classNum;
+        document.getElementById('entryNumber').value = parsed.number;
+        document.getElementById('entryStudentId').value = studentId;
+        document.getElementById('entryName').value = name;
+        document.getElementById('entryInstaId').value = instaId;
+        document.getElementById('entryImage').value = imageData;  // 참고용
+
+        // 폼 제출
+        document.getElementById('googleForm').submit();
+
+        alert('응모가 완료되었습니다!');
         });
     </script>
 </body>
