@@ -138,16 +138,17 @@
         });
 
         const btn = document.getElementById('fullscreenBtn');
-
+        const target = document.body;  // body 요소를 전체화면 대상으로 지정
+        
         btn.addEventListener('click', () => {
-            if (!document.fullscreenElement) {
-            document.documentElement.requestFullscreen().catch((err) => {
-                alert(`전체화면 모드 요청 실패: ${err.message}`);
+        if (!document.fullscreenElement) {
+                target.requestFullscreen().catch(err => {
+                alert(`전체화면 요청 실패: ${err.message}`);
             });
-            } else {
+        } else {
             document.exitFullscreen();
             }
-        });
+          });
     </script>
 </body>
 </html>
