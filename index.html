@@ -18,7 +18,7 @@
             font-weight: normal;
             font-style: normal;
         }
-        
+
         html, body {
             width: 100%;
             height: 100%;
@@ -45,7 +45,6 @@
         }
         
         .article {
-            height: 42vh;
             width: 100%;
             background-color: #ffffff;
             margin-top: 4.695vh;
@@ -87,6 +86,7 @@
             margin-left: 8.5%;
             margin-right: 8.5%;
             margin-top: 3vh;
+            margin-bottom: 3vh;
             border-radius: 100vh;
             border: 0;
             font-size: 1.951vh;
@@ -112,11 +112,16 @@
             <p class="hb-text">특수문자까지 완벽하게 작성해주세요</p>
             <button class="bu">이벤트 응모하기</button>
         </article>
+        <img id="preview" style="width:100%; border-radius: 1vh; display: none; margin-top: 2vh;" />
     </main>
 
   <!-- JavaScript 작성 공간 -->
     <script>
         const video = document.getElementById('camera');
+        const button = document.querySelector('.bu');
+        const inputs = document.querySelectorAll('.hb');
+        const preview = document.getElementById('preview');
+
 
         navigator.mediaDevices.getUserMedia({ video: true, audio: false })
             .then(stream => {
@@ -125,6 +130,38 @@
             .catch(err => {
             console.error("카메라 접근 오류:", err);
             alert("카메라에 접근할 수 없습니다.");
+        });
+        
+        // 버튼 클릭 시
+        button.addEventListener('click', () => {
+            const [studentId, name, instaId] = Array.from(inputs).map(input => input.value.trim());
+
+            if (!studentId || !name || !instaId) {
+                alert("모든 입력란을 채워주세요.");
+                return;
+            }
+
+            // canvas로 카메라 이미지 캡처
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.translate(canvas.width, 0); // 좌우 반전
+            ctx.scale(-1, 1);
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            const imageData = canvas.toDataURL('image/png');
+
+            // 미리보기 이미지 표시
+            preview.src = imageData;
+            preview.style.display = 'block';
+
+            // 정보 확인 alert
+            const confirmText = `다음 정보로 응모하시겠습니까?\n\n학번: ${studentId}\n이름: ${name}\n인스타 ID: ${instaId}`;
+            if (confirm(confirmText)) {
+                alert("응모가 완료되었습니다!");
+                // 서버 전송 코드 추가 가능
+            }
         });
     </script>
 </body>
