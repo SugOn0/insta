@@ -229,6 +229,15 @@
         document.getElementById('studentId').value = '';
         document.getElementById('name').value = '';
         document.getElementById('instaId').value = '';
+        // 카메라 활성화
+        navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+        .then(stream => {
+            video.srcObject = stream;
+        })
+        .catch(err => {
+            console.error('카메라 접근 오류:', err);
+            alert('카메라에 접근할 수 없습니다.');
+        });
         });
     </script>
 </body>
