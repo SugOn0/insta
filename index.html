@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INSTAEVENT</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+
+        video {
+            width: 100%;
+            max-width: 720px;
+            border-radius: 10px;
+            background: black;
+            transform: scaleX(-1);
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        /* 여기에 추가 CSS 작성 */
+    </style>
+</head>
+<body>
+    <video id="camera" autoplay playsinline></video>
+
+  <!-- JavaScript 작성 공간 -->
+    <script>
+        const video = document.getElementById('camera');
+
+        navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+            .then(stream => {
+                video.srcObject = stream;
+            })
+            .catch(err => {
+            console.error("카메라 접근 오류:", err);
+            alert("카메라에 접근할 수 없습니다.");
+        });
+    </script>
+</body>
+</html>
