@@ -108,8 +108,8 @@
         <article class="article">
             <input class="hb" placeholder="학번을 입력해주세요" maxlength="5">
             <input class="hb" placeholder="이름을 입력해주세요">
-            <input class="hb" placeholder="인스타 아이디를 입력해주세요">
-            <p class="hb-text">대/소문자, 기호까지 완벽하게 작성해주세요</p>
+            <input class="hb" placeholder="인스타 아이디를 입력해주세요" oninput="this.value = this.value.toLowerCase()">
+            <p class="hb-text">특수문자까지 완벽하게 작성해주세요</p>
             <button class="bu">이벤트 응모하기</button>
         </article>
     </main>
