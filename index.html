@@ -99,10 +99,20 @@
             box-shadow: inset 0 0 0 2px #666666;
         }
 
+        .fullscreenBtn {
+            width: 1vh;
+            height: 1vh;
+            background-color: rgb(140, 86, 247, 0.5);
+            padding: 0;
+            margin: 0;
+            border: 0;
+        }
+
         /* 여기에 추가 CSS 작성 */
     </style>
 </head>
 <body>
+    <button class="fullscreenBtn" id="fullscreenBtn"></button>
     <main>
         <video id="camera" autoplay playsinline></video>
         <article class="article">
@@ -125,6 +135,18 @@
             .catch(err => {
             console.error("카메라 접근 오류:", err);
             alert("카메라에 접근할 수 없습니다.");
+        });
+
+        const btn = document.getElementById('fullscreenBtn');
+
+        btn.addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch((err) => {
+                alert(`전체화면 모드 요청 실패: ${err.message}`);
+            });
+            } else {
+            document.exitFullscreen();
+            }
         });
     </script>
 </body>
